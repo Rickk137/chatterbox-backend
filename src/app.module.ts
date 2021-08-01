@@ -13,12 +13,12 @@ import { MediaController } from './media/media.controller';
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://localhost:27017/chatterbox'),
-    ChatModule,
-    UsersModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/media',
     }),
+    ChatModule,
+    UsersModule,
   ],
   controllers: [AppController, MediaController],
   providers: [AppService],
