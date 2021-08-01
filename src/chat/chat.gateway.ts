@@ -10,6 +10,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
+let users = [];
+
 @WebSocketGateway()
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -24,15 +26,22 @@ export class ChatGateway
 
   handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
-    client.emit('message', 'salam')
+    users.push(client.id);
+    this.server.emit('message', users);
   }
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
+    users = users.filter((user) => user !== client.id);
+    this.server.emit('message', users);
   }
 
   @SubscribeMessage('message')
   handleMessage(@MessageBody() message: string): void {
     this.server.emit('message', message);
+  }
+
+  @SubscribeMessage('join-room')
+  joinChannel(client: Socket, @MessageBody() message: string): void {
   }
 }
