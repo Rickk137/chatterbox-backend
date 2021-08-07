@@ -13,7 +13,6 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
-    console.log('email: ', email, pass);
     const user = await this.usersService.findByEmail(email);
     if (!user) return null;
 
@@ -42,12 +41,18 @@ export class AuthService {
       family,
       username,
       password,
+      rooms: [],
     });
     return user;
   }
 
   async update(id: string, payload: UpdateUserDto) {
     const user = await this.usersService.update(id, payload);
+    return user;
+  }
+
+  async getUserInfo(id: string) {
+    const user = await this.usersService.findOne(id);
     return user;
   }
 }

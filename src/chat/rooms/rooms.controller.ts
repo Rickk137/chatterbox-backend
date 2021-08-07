@@ -7,23 +7,28 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('rooms')
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createRoomDto: CreateRoomDto) {
-    return this.roomsService.create(createRoomDto);
+  create(@Body() createRoomDto: CreateRoomDto, @Request() req) {
+    return this.roomsService.create(createRoomDto, req.user.userId);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
-  findAll(@Query() { limit, skip }) {
-    return this.roomsService.findAll(limit, skip);
+  findAll(@Request() req, @Query() { limit, skip }) {
+    return this.roomsService.getUserRooms(req.user.userId, limit, skip);
   }
 
   @Get(':id')
@@ -36,8 +41,9 @@ export class RoomsController {
     return this.roomsService.update(id, updateRoomDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.roomsService.remove(id);
+  remove(@Request() req, @Param('id') id: string) {
+    return this.roomsService.remove(id, req.user.userId);
   }
 }

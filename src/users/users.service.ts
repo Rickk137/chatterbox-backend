@@ -58,18 +58,22 @@ export class UsersService {
     delete updateUserDto.password;
 
     if (!updateUserDto.username) delete updateUserDto.username;
+    else {
+      const existedUser = await this.userModel.findOne({
+        username: updateUserDto.username,
+        _id: { $ne: userId },
+      });
+      if (existedUser) throw new BadRequestException('Username already exists');
+    }
 
-    let existedUser = await this.userModel.findOne({
-      username: updateUserDto.username,
-      _id: { $ne: userId },
-    });
-    if (existedUser) throw new BadRequestException('Username already exists');
-
-    existedUser = await this.userModel.findOne({
-      username: updateUserDto.email,
-      _id: { $ne: userId },
-    });
-    if (existedUser) throw new BadRequestException('Email already exists');
+    if (!updateUserDto.email) delete updateUserDto.email;
+    else {
+      const existedUser = await this.userModel.findOne({
+        username: updateUserDto.email,
+        _id: { $ne: userId },
+      });
+      if (existedUser) throw new BadRequestException('Email already exists');
+    }
 
     await this.userModel.updateOne({ _id: userId }, updateUserDto);
     const user = this.userModel.findById(userId);
@@ -83,5 +87,37 @@ export class UsersService {
     await this.userModel.deleteOne({ _id: userId });
 
     return `The #${id} user is removed`;
+  }
+
+  async joinRoom(id: string, roomId: string) {
+    const user = await this.findOne(id);
+
+    const roomIdObject = getObjectId(roomId);
+    const rooms = user.rooms;
+    if (rooms.findIndex((room) => room === roomIdObject) < 0) {
+      rooms.push(roomIdObject);
+    }
+
+    await this.update(id, { rooms });
+
+    return `The #${id} user joined the #${roomId} room.`;
+  }
+
+  async leaveRoom(id: string, roomId: string) {
+    const user = await this.findOne(id);
+
+    const roomIdObject = getObjectId(roomId);
+    const rooms = user.rooms.filter((room) => room != roomIdObject);
+
+    await this.update(id, { rooms });
+
+    return `The #${id} user left the #${roomId} room.`;
+  }
+
+  async getUserRooms(id: string) {
+    const userId = getObjectId(id);
+    const user = await this.userModel.findById(userId).populate('rooms');
+
+    return user.rooms;
   }
 }

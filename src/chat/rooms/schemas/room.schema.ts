@@ -1,12 +1,12 @@
 import { Member, Role } from '../entities/room.entity';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types, SchemaTypes } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type RoomDocument = Room & Document;
 
 @Schema()
 class MemberDoc extends Document {
-  @Prop({ type: SchemaTypes.ObjectId, ref: 'users', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
 
   @Prop({ default: Role.USER })
@@ -23,6 +23,7 @@ export class Room {
   @Prop()
   icon: string;
 
+  @Prop({ type: [{ type: Types.ObjectId, ref: Room.name, default: [] }] })
   @Prop({
     type: [MemberSchema],
     default: [],

@@ -1,4 +1,4 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export interface User extends Document {
   id: string;
@@ -7,4 +7,5 @@ export interface User extends Document {
   email: string;
   username: string;
   password: string;
+  rooms: Types.ObjectId[];
 }
