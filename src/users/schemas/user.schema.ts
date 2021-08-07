@@ -11,11 +11,18 @@ export class User {
   @Prop()
   family: string;
 
-  @Prop()
+  @Prop({
+    type: String,
+    unique: true,
+    required: true,
+    trim: true,
+    dropDups: true,
+    nullable: false,
+  })
   username: string;
 
-  @Prop()
-  password: string;
+  @Prop({ required: true })
+  password!: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
