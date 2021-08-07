@@ -15,11 +15,15 @@ export class UsersService {
   async create(payload: CreateUserDto) {
     if (!payload.username)
       throw new BadRequestException('Username is required');
+    if (!payload.email) throw new BadRequestException('Email is required');
     if (!payload.password)
       throw new BadRequestException('Password is required');
 
-    const user = await this.findByUsername(payload.username);
+    let user = await this.findByUsername(payload.username);
     if (user) throw new BadRequestException('Username already exists');
+
+    user = await this.findByEmail(payload.email);
+    if (user) throw new BadRequestException('Email already exists');
 
     const password = await bcrypt.hash(payload.password, 10);
 
@@ -43,6 +47,11 @@ export class UsersService {
     return user;
   }
 
+  async findByEmail(email: string) {
+    const user = await this.userModel.findOne({ email });
+    return user;
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto) {
     const userId = getObjectId(id);
 
@@ -50,11 +59,17 @@ export class UsersService {
 
     if (!updateUserDto.username) delete updateUserDto.username;
 
-    const existedUser = await this.userModel.findOne({
+    let existedUser = await this.userModel.findOne({
       username: updateUserDto.username,
       _id: { $ne: userId },
     });
     if (existedUser) throw new BadRequestException('Username already exists');
+
+    existedUser = await this.userModel.findOne({
+      username: updateUserDto.email,
+      _id: { $ne: userId },
+    });
+    if (existedUser) throw new BadRequestException('Email already exists');
 
     await this.userModel.updateOne({ _id: userId }, updateUserDto);
     const user = this.userModel.findById(userId);
