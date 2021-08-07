@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { ChatModule } from './chat/chat.module';
 import { UsersModule } from './users/users.module';
 import { MediaController } from './media/media.controller';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { MediaController } from './media/media.controller';
     }),
     ChatModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController, MediaController],
   providers: [AppService],
