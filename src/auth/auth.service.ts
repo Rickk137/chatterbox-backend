@@ -42,6 +42,7 @@ export class AuthService {
       username,
       password,
       rooms: [],
+      privateRooms: [],
     });
     return user;
   }

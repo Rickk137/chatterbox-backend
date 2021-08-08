@@ -1,3 +1,4 @@
+import { MongooseModule } from '@nestjs/mongoose';
 import { PagerMiddleware } from './../../middlewares/pager.middleware';
 import {
   MiddlewareConsumer,
@@ -7,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { RoomsController } from './rooms.controller';
-import { MongooseModule } from '@nestjs/mongoose';
 import { Room, RoomSchema } from './schemas/room.schema';
 import { UsersModule } from 'src/users/users.module';
 
@@ -18,6 +18,7 @@ import { UsersModule } from 'src/users/users.module';
   ],
   controllers: [RoomsController],
   providers: [RoomsService],
+  exports: [RoomsService],
 })
 export class RoomsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -88,9 +92,42 @@ export class UsersService {
 
     return `The #${id} user is removed`;
   }
+  async addPrivateRoom(author: string, receiver: string) {
+    const authorId = getObjectId(author);
+    const receiverId = getObjectId(receiver);
+
+    const authorUser = await this.userModel.findById(authorId);
+    const receiverUser = await this.userModel.findById(receiverId);
+
+    if (!authorUser || !receiverUser)
+      throw new BadRequestException('User not found!');
+
+    const authorRooms = authorUser.privateRooms;
+    const receiverRooms = receiverUser.privateRooms;
+
+    if (authorRooms.findIndex((id) => receiverId === id) < 0) {
+      authorRooms.push(receiverId);
+      await this.userModel.updateOne(
+        { _id: authorId },
+        { privateRooms: authorRooms },
+      );
+    }
+
+    if (receiverRooms.findIndex((id) => authorId === id) < 0) {
+      receiverRooms.push(authorId);
+      await this.userModel.updateOne(
+        { _id: authorId },
+        { privateRooms: receiverRooms },
+      );
+    }
+
+    return `Successfully added`;
+  }
 
   async joinRoom(id: string, roomId: string) {
     const user = await this.findOne(id);
+
+    if (!user) throw new NotFoundException('User not found');
 
     const roomIdObject = getObjectId(roomId);
     const rooms = user.rooms;
@@ -117,6 +154,8 @@ export class UsersService {
   async getUserRooms(id: string) {
     const userId = getObjectId(id);
     const user = await this.userModel.findById(userId).populate('rooms');
+
+    if (!user) throw new NotFoundException('User not found');
 
     return user.rooms;
   }

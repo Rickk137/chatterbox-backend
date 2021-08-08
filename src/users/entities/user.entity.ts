@@ -8,4 +8,5 @@ export interface User extends Document {
   username: string;
   password: string;
   rooms: Types.ObjectId[];
+  privateRooms: Types.ObjectId[];
 }

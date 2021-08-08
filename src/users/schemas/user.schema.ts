@@ -36,6 +36,9 @@ export class User {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Room', default: [] }] })
   rooms: Types.ObjectId[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User', default: [] }] })
+  privateRooms: Types.ObjectId[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

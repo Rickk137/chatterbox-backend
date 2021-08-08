@@ -6,4 +6,5 @@ export class CreateUserDto {
   username: string;
   password: string;
   rooms: Types.ObjectId[];
+  privateRooms: Types.ObjectId[];
 }
