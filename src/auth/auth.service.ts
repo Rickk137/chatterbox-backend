@@ -56,4 +56,13 @@ export class AuthService {
     const user = await this.usersService.findOne(id);
     return user;
   }
+
+  async verifyToken(token: string) {
+    try {
+      const verify = await this.jwtService.verify(token);
+      return verify;
+    } catch (error) {
+      return false;
+    }
+  }
 }

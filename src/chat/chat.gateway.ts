@@ -1,3 +1,5 @@
+import { UsersService } from './../users/users.service';
+import { AuthService } from './../auth/auth.service';
 import { Logger } from '@nestjs/common';
 import {
   MessageBody,
@@ -9,6 +11,8 @@ import {
   OnGatewayInit,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { CreateMessageDto } from './messages/dto/create-message.dto';
+import { MessageType } from './messages/entities/message.entity';
 
 let users = [];
 
@@ -16,6 +20,11 @@ let users = [];
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
+
   @WebSocketServer() server: Server;
 
   private logger: Logger = new Logger('AppGateway');
@@ -24,10 +33,19 @@ export class ChatGateway
     this.logger.log('Init');
   }
 
-  handleConnection(client: Socket) {
+  async handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
-    users.push(client.id);
-    this.server.emit('message', users);
+    const user = await this.authService.verifyToken(
+      client.handshake.auth.token,
+    );
+    if (!user || !user.sub) {
+      client.disconnect();
+    }
+    const userId = user.sub;
+    client.join(userId);
+
+    const userInfo = await this.usersService.findOne(userId);
+    client.join(userInfo.rooms.map((roomId) => `${roomId}`));
   }
 
   handleDisconnect(client: Socket) {
@@ -37,11 +55,12 @@ export class ChatGateway
   }
 
   @SubscribeMessage('message')
-  handleMessage(@MessageBody() message: string): void {
-    this.server.emit('message', message);
+  handleMessage(@MessageBody() message: CreateMessageDto): void {
+    if (message.type === MessageType.ROOM) {
+      this.server.to(message.receiver).emit('message', message);
+    }
   }
 
   @SubscribeMessage('join-room')
-  joinChannel(client: Socket, @MessageBody() message: string): void {
-  }
+  joinChannel(client: Socket, @MessageBody() message: string): void {}
 }
