@@ -40,6 +40,19 @@ export class UsersService {
     return users;
   }
 
+  async search(query: string) {
+    const queryOption = { $regex: query, $options: 'i' };
+    const users = await this.userModel.find({
+      $or: [
+        { name: queryOption },
+        { family: queryOption },
+        { email: queryOption },
+        { username: queryOption },
+      ],
+    });
+    return users;
+  }
+
   async findOne(id: string) {
     const userId = getObjectId(id);
     const user = await this.userModel.findById(userId);

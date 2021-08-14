@@ -69,6 +69,16 @@ export class MessagesService {
 
     return messages;
   }
+  async getRoomMessages(roomId: string, limit = 50, skip = 0) {
+    const messages = await this.messageModel
+      .find({
+        receiver: roomId,
+      })
+      .skip(skip)
+      .limit(limit);
+
+    return messages;
+  }
 
   async findOne(id: string) {
     const messageId = getObjectId(id);

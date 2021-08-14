@@ -8,7 +8,13 @@ import { MessagesModule } from './messages/message.module';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [RoomsModule, MessagesModule, AuthModule, UsersModule],
+  imports: [
+    RoomsModule,
+    MessagesModule,
+    AuthModule,
+    UsersModule,
+    MessagesModule,
+  ],
   controllers: [ChatController],
   providers: [ChatService, ChatGateway],
 })

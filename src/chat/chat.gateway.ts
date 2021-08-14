@@ -9,10 +9,12 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { CreateMessageDto } from './messages/dto/create-message.dto';
 import { MessageType } from './messages/entities/message.entity';
+import { MessagesService } from './messages/message.service';
 
 let users = [];
 
@@ -23,6 +25,7 @@ export class ChatGateway
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly messagesService: MessagesService,
   ) {}
 
   @WebSocketServer() server: Server;
@@ -33,8 +36,9 @@ export class ChatGateway
     this.logger.log('Init');
   }
 
-  async handleConnection(client: Socket) {
+  async checkSocket(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
+
     const user = await this.authService.verifyToken(
       client.handshake.auth.token,
     );
@@ -43,6 +47,12 @@ export class ChatGateway
     }
     const userId = user.sub;
     client.join(userId);
+
+    return userId;
+  }
+
+  async handleConnection(client: Socket) {
+    const userId = await this.checkSocket(client);
 
     const userInfo = await this.usersService.findOne(userId);
     client.join(userInfo.rooms.map((roomId) => `${roomId}`));
@@ -55,10 +65,19 @@ export class ChatGateway
   }
 
   @SubscribeMessage('message')
-  handleMessage(@MessageBody() message: CreateMessageDto): void {
+  async handleMessage(
+    @MessageBody() message: CreateMessageDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = await this.checkSocket(client);
+
     if (message.type === MessageType.ROOM) {
-      this.server.to(message.receiver).emit('message', message);
+      this.server
+        .to(message.receiver)
+        .emit('message', { ...message, author: userId });
     }
+
+    this.messagesService.create(message, userId);
   }
 
   @SubscribeMessage('join-room')

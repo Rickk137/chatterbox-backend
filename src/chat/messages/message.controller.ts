@@ -31,6 +31,12 @@ export class MessagesController {
     return this.messageService.findAll(limit, skip);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('/rooms/:id')
+  getRoomMessages(@Param('id') roomId: string, @Query() { limit, skip }) {
+    return this.messageService.getRoomMessages(roomId, limit, skip);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.messageService.findOne(id);
