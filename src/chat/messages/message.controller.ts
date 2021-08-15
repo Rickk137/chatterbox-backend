@@ -43,13 +43,15 @@ export class MessagesController {
   getUserMessages(
     @Request() req,
     @Param('id') userId: string,
-    @Query() { limit, skip },
+    @Query() { limit, timestamp },
   ) {
+    if (limit) limit = parseInt(limit);
+
     return this.messageService.getUserMessages(
       userId,
       req.user.userId,
+      timestamp,
       limit,
-      skip,
     );
   }
 

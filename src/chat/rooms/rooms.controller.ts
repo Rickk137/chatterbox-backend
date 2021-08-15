@@ -31,14 +31,22 @@ export class RoomsController {
     return this.roomsService.getUserRooms(req.user.userId, limit, skip);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.roomsService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
     return this.roomsService.update(id, updateRoomDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/member')
+  addUserToRoom(@Param('id') id: string, @Body() body, @Request() req) {
+    return this.roomsService.addUserToRoom(id, req.user.userId, body.userId);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -41,6 +46,36 @@ export class RoomsService {
     return newRoom;
   }
 
+  async addUserToRoom(id: string, userId: string, memberId: string) {
+    const roomId = getObjectId(id);
+    const room = await this.roomModel.findById(roomId);
+
+    if (!room) {
+      throw new NotFoundException();
+    }
+
+    const members = room.members;
+    const member = members.find((item) => `${item.userId}` === userId);
+
+    if (!member || member.role > Role.ADMIN) {
+      throw new ForbiddenException();
+    }
+
+    if (members.find((item) => item.userId === getObjectId(memberId))) {
+      throw new BadRequestException('User Already in the Room');
+    }
+
+    members.push({
+      userId: getObjectId(memberId),
+      role: Role.USER,
+    });
+
+    await this.userService.joinRoom(memberId, id);
+    await this.update(id, { members });
+
+    return 'Updated';
+  }
+
   async findAll(limit = 50, skip = 0) {
     const rooms = await this.roomModel.find().skip(skip).limit(limit);
 
@@ -52,6 +87,7 @@ export class RoomsService {
     const room = await this.roomModel
       .findById(roomId)
       .populate('members.userId', 'name family username');
+
     return room;
   }
 

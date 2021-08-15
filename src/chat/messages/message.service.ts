@@ -72,6 +72,7 @@ export class MessagesService {
   async getRoomMessages(roomId: string, timestamp: string, limit = 50) {
     const filter = {
       receiver: roomId,
+      type: MessageType.ROOM,
       timestamp: timestamp
         ? {
             $lt: parseInt(timestamp),
@@ -80,7 +81,6 @@ export class MessagesService {
     };
     if (!filter.timestamp) delete filter.timestamp;
 
-    console.log('filter: ', timestamp, filter);
     const messages = await this.messageModel
       .find(filter)
       .sort({ createdAt: -1 })
@@ -91,22 +91,29 @@ export class MessagesService {
   async getUserMessages(
     userId: string,
     targetId: string,
+    timestamp: string,
     limit = 50,
-    skip = 0,
   ) {
-    console.log(targetId, userId);
+    const filter = {
+      $or: [
+        { author: targetId, receiver: userId },
+        { receiver: targetId, author: userId },
+      ],
+      type: MessageType.USER,
+      timestamp: timestamp
+        ? {
+            $lt: parseInt(timestamp),
+          }
+        : null,
+    };
+    if (!filter.timestamp) delete filter.timestamp;
 
     const messages = await this.messageModel
-      .find({
-        $or: [
-          { author: targetId, receiver: userId },
-          { receiver: targetId, author: userId },
-        ],
-      })
-      .skip(skip)
+      .find(filter)
+      .sort({ createdAt: -1 })
       .limit(limit);
 
-    return messages;
+    return messages.reverse();
   }
 
   async findOne(id: string) {

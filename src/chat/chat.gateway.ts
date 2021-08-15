@@ -86,4 +86,17 @@ export class ChatGateway
     const userInfo = await this.usersService.findOne(userId);
     client.join(userInfo.rooms.map((roomId) => `${roomId}`));
   }
+
+  @SubscribeMessage('update-rooms')
+  async updateRooms(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() user: string,
+  ) {
+    await this.checkSocket(client);
+    const userInfo = await this.usersService.findOne(user);
+
+    if (!userInfo) return;
+
+    this.server.to(user).emit('update-rooms');
+  }
 }
