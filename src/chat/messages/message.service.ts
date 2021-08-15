@@ -23,7 +23,7 @@ export class MessagesService {
   ) {}
 
   async create(createMessageDto: CreateMessageDto, userId) {
-    const { content, receiver, type } = createMessageDto;
+    const { content, receiver, type, timestamp } = createMessageDto;
 
     if (
       !content ||
@@ -56,7 +56,7 @@ export class MessagesService {
       content,
       receiver,
       type,
-      timestamp: new Date(),
+      timestamp,
       author: userId,
     };
     const message = await this.messageModel.create(payload);
@@ -69,10 +69,39 @@ export class MessagesService {
 
     return messages;
   }
-  async getRoomMessages(roomId: string, limit = 50, skip = 0) {
+  async getRoomMessages(roomId: string, timestamp: string, limit = 50) {
+    const filter = {
+      receiver: roomId,
+      timestamp: timestamp
+        ? {
+            $lt: parseInt(timestamp),
+          }
+        : null,
+    };
+    if (!filter.timestamp) delete filter.timestamp;
+
+    console.log('filter: ', timestamp, filter);
+    const messages = await this.messageModel
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    return messages.reverse();
+  }
+  async getUserMessages(
+    userId: string,
+    targetId: string,
+    limit = 50,
+    skip = 0,
+  ) {
+    console.log(targetId, userId);
+
     const messages = await this.messageModel
       .find({
-        receiver: roomId,
+        $or: [
+          { author: targetId, receiver: userId },
+          { receiver: targetId, author: userId },
+        ],
       })
       .skip(skip)
       .limit(limit);

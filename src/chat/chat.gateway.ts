@@ -52,10 +52,7 @@ export class ChatGateway
   }
 
   async handleConnection(client: Socket) {
-    const userId = await this.checkSocket(client);
-
-    const userInfo = await this.usersService.findOne(userId);
-    client.join(userInfo.rooms.map((roomId) => `${roomId}`));
+    this.joinRooms(client);
   }
 
   handleDisconnect(client: Socket) {
@@ -70,16 +67,23 @@ export class ChatGateway
     @ConnectedSocket() client: Socket,
   ) {
     const userId = await this.checkSocket(client);
+    const msg = { ...message, timestamp: new Date().getTime(), author: userId };
 
     if (message.type === MessageType.ROOM) {
-      this.server
-        .to(message.receiver)
-        .emit('message', { ...message, author: userId });
+      this.server.to(message.receiver).emit('message', msg);
+    } else if (message.type === MessageType.USER) {
+      this.server.to(message.receiver).emit('message', msg);
+      client.emit('message', msg);
     }
 
-    this.messagesService.create(message, userId);
+    this.messagesService.create(msg, userId);
   }
 
   @SubscribeMessage('join-room')
-  joinChannel(client: Socket, @MessageBody() message: string): void {}
+  async joinRooms(@ConnectedSocket() client: Socket) {
+    const userId = await this.checkSocket(client);
+
+    const userInfo = await this.usersService.findOne(userId);
+    client.join(userInfo.rooms.map((roomId) => `${roomId}`));
+  }
 }

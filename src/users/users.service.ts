@@ -55,7 +55,10 @@ export class UsersService {
 
   async findOne(id: string) {
     const userId = getObjectId(id);
-    const user = await this.userModel.findById(userId);
+    const user = await this.userModel
+      .findById(userId, 'name family privateRooms email username rooms')
+      .populate('privateRooms', 'name family username');
+
     return user;
   }
 
@@ -115,24 +118,27 @@ export class UsersService {
     if (!authorUser || !receiverUser)
       throw new BadRequestException('User not found!');
 
-    const authorRooms = authorUser.privateRooms;
-    const receiverRooms = receiverUser.privateRooms;
+    let authorRooms = authorUser.privateRooms;
+    let receiverRooms = receiverUser.privateRooms;
 
-    if (authorRooms.findIndex((id) => receiverId === id) < 0) {
-      authorRooms.push(receiverId);
-      await this.userModel.updateOne(
-        { _id: authorId },
-        { privateRooms: authorRooms },
-      );
-    }
+    authorRooms.unshift(receiverId);
+    authorRooms = authorRooms.filter((item, pos, self) => {
+      return self.indexOf(item) == pos;
+    });
 
-    if (receiverRooms.findIndex((id) => authorId === id) < 0) {
-      receiverRooms.push(authorId);
-      await this.userModel.updateOne(
-        { _id: authorId },
-        { privateRooms: receiverRooms },
-      );
-    }
+    await this.userModel.updateOne(
+      { _id: authorId },
+      { privateRooms: authorRooms },
+    );
+
+    receiverRooms.unshift(authorId);
+    receiverRooms = receiverRooms.filter((item, pos, self) => {
+      return self.indexOf(item) == pos;
+    });
+    await this.userModel.updateOne(
+      { _id: receiverId },
+      { privateRooms: receiverRooms },
+    );
 
     return `Successfully added`;
   }

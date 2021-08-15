@@ -4,4 +4,5 @@ export class CreateMessageDto {
   content: string;
   receiver: string;
   type: MessageType;
+  timestamp: number;
 }

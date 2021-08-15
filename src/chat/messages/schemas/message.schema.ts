@@ -4,13 +4,13 @@ import { Document, Types } from 'mongoose';
 
 export type MessageDocument = Message & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Message {
   @Prop({ required: true })
   content: string;
 
   @Prop()
-  timestamp: Date;
+  timestamp: number;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   author: Types.ObjectId;

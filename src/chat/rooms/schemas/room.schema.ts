@@ -15,7 +15,7 @@ class MemberDoc extends Document {
 
 const MemberSchema = SchemaFactory.createForClass(MemberDoc);
 
-@Schema()
+@Schema({ timestamps: true })
 export class Room {
   @Prop()
   name: string;

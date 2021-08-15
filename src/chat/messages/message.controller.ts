@@ -33,8 +33,24 @@ export class MessagesController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/rooms/:id')
-  getRoomMessages(@Param('id') roomId: string, @Query() { limit, skip }) {
-    return this.messageService.getRoomMessages(roomId, limit, skip);
+  getRoomMessages(@Param('id') roomId: string, @Query() { limit, timestamp }) {
+    if (limit) limit = parseInt(limit);
+    return this.messageService.getRoomMessages(roomId, timestamp, limit);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/pv/:id')
+  getUserMessages(
+    @Request() req,
+    @Param('id') userId: string,
+    @Query() { limit, skip },
+  ) {
+    return this.messageService.getUserMessages(
+      userId,
+      req.user.userId,
+      limit,
+      skip,
+    );
   }
 
   @Get(':id')
