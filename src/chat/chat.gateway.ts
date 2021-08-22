@@ -99,4 +99,14 @@ export class ChatGateway
 
     this.server.to(user).emit('update-rooms');
   }
+
+  @SubscribeMessage('call')
+  async callUser(
+    @MessageBody() user: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = await this.checkSocket(client);
+
+    this.server.to(user).emit('calling', userId);
+  }
 }
