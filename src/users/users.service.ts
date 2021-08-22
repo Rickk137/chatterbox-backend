@@ -70,6 +70,11 @@ export class UsersService {
     return user;
   }
 
+  async findById(_id: string) {
+    const user = await this.userModel.findOne({ _id });
+    return user;
+  }
+
   async findByEmail(email: string) {
     const user = await this.userModel.findOne({ email });
     return user;
