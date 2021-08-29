@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';
 
 import { I18nModule, I18nJsonParser, HeaderResolver } from 'nestjs-i18n';
@@ -16,18 +15,8 @@ import { UsersModule } from './users/users.module';
 import { MediaController } from './media/media.controller';
 import { AuthModule } from './auth/auth.module';
 import { AllExceptionsFilter } from './http-exception.filter';
-
-const envFilePath = () => {
-  let envPath = '.env';
-  if (process.env.NODE_ENV) envPath += `.${process.env.NODE_ENV}`;
-  return envPath;
-};
-
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      envFilePath: envFilePath(),
-    }),
     MongooseModule.forRoot(process.env.DB_URL),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
