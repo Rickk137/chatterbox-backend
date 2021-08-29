@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';
 
 import { I18nModule, I18nJsonParser, HeaderResolver } from 'nestjs-i18n';
@@ -18,7 +19,10 @@ import { AllExceptionsFilter } from './http-exception.filter';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/chatterbox'),
+    ConfigModule.forRoot({
+      envFilePath: `.env.${process.env.NODE_ENV || 'local'}`,
+    }),
+    MongooseModule.forRoot(process.env.DB_URL),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/media',
