@@ -84,8 +84,10 @@ export class ChatGateway
   @SubscribeMessage('join-room')
   async joinRooms(@ConnectedSocket() client: Socket) {
     const userId = await this.checkSocket(client);
-
     const userInfo = await this.usersService.findOne(userId);
+    if (!userInfo) {
+      client.disconnect();
+    }
     client.join(userInfo.rooms.map((roomId) => `${roomId}`));
   }
 

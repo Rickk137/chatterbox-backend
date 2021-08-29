@@ -17,10 +17,16 @@ import { MediaController } from './media/media.controller';
 import { AuthModule } from './auth/auth.module';
 import { AllExceptionsFilter } from './http-exception.filter';
 
+const envFilePath = () => {
+  let envPath = '.env';
+  if (process.env.NODE_ENV) envPath += `.${process.env.NODE_ENV}`;
+  return envPath;
+};
+
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: `.env.${process.env.NODE_ENV || 'local'}`,
+      envFilePath: envFilePath(),
     }),
     MongooseModule.forRoot(process.env.DB_URL),
     ServeStaticModule.forRoot({
