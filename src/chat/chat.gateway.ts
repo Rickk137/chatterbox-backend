@@ -73,7 +73,9 @@ export class ChatGateway
       this.server.to(message.receiver).emit('message', msg);
     } else if (message.type === MessageType.USER) {
       this.server.to(message.receiver).emit('message', msg);
-      client.emit('message', msg);
+      if (message.receiver !== userId) {
+        client.emit('message', msg);
+      }
     }
 
     this.messagesService.create(msg, userId);
