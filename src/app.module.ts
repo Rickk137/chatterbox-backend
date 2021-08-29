@@ -19,7 +19,7 @@ import { AllExceptionsFilter } from './http-exception.filter';
 @Module({
   imports: [
     MongooseModule.forRoot(
-      process.env.DB_URL || 'mongodb://localhost:27017/chatterbox',
+      process.env.DB_URL || 'mongodb://localhost:27017/chatterBox',
     ),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
