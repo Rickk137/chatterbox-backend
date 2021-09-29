@@ -12,7 +12,7 @@ import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { getObjectId } from 'src/utils/db';
 import { UsersService } from 'src/users/users.service';
-import { MessageType } from './entities/message.entity';
+import { ContentType, MessageType } from './entities/message.entity';
 
 @Injectable()
 export class MessagesService {
@@ -23,7 +23,8 @@ export class MessagesService {
   ) {}
 
   async create(createMessageDto: CreateMessageDto, userId) {
-    const { content, receiver, type, timestamp } = createMessageDto;
+    const { content, receiver, type, timestamp, contentType } =
+      createMessageDto;
 
     if (
       !content ||
@@ -58,6 +59,7 @@ export class MessagesService {
       type,
       timestamp,
       author: userId,
+      contentType: contentType || ContentType.TEXT,
     };
     const message = await this.messageModel.create(payload);
 

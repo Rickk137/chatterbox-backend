@@ -1,4 +1,4 @@
-import { MessageType } from '../entities/message.entity';
+import { MessageType, ContentType } from '../entities/message.entity';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
@@ -8,6 +8,9 @@ export type MessageDocument = Message & Document;
 export class Message {
   @Prop({ required: true })
   content: string;
+
+  @Prop({ default: ContentType.TEXT })
+  contentType: string;
 
   @Prop()
   timestamp: number;

@@ -24,10 +24,10 @@ export class UsersService {
       throw new BadRequestException('Password is required');
 
     let user = await this.findByUsername(payload.username);
-    if (user) throw new BadRequestException('Username already exists');
+    if (user) throw new BadRequestException({ key: 'auth.usernameExist' });
 
     user = await this.findByEmail(payload.email);
-    if (user) throw new BadRequestException('Email already exists');
+    if (user) throw new BadRequestException({ key: 'auth.emailExist' });
 
     const password = await bcrypt.hash(payload.password, 10);
 

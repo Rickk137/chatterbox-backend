@@ -73,7 +73,9 @@ export class ChatGateway
       this.server.to(message.receiver).emit('message', msg);
     } else if (message.type === MessageType.USER) {
       this.server.to(message.receiver).emit('message', msg);
-      client.emit('message', msg);
+      if (message.receiver !== userId) {
+        client.emit('message', msg);
+      }
     }
 
     this.messagesService.create(msg, userId);
@@ -82,8 +84,10 @@ export class ChatGateway
   @SubscribeMessage('join-room')
   async joinRooms(@ConnectedSocket() client: Socket) {
     const userId = await this.checkSocket(client);
-
     const userInfo = await this.usersService.findOne(userId);
+    if (!userInfo) {
+      client.disconnect();
+    }
     client.join(userInfo.rooms.map((roomId) => `${roomId}`));
   }
 
