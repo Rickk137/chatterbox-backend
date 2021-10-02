@@ -18,6 +18,13 @@ import { MessagesService } from './messages/message.service';
 
 let users = [];
 
+interface callObject {
+  userId: string;
+  name: string;
+  family: string;
+  peerId: string;
+}
+
 @WebSocketGateway()
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -106,11 +113,24 @@ export class ChatGateway
 
   @SubscribeMessage('call')
   async callUser(
-    @MessageBody() user: string,
+    @MessageBody() call: callObject,
     @ConnectedSocket() client: Socket,
   ) {
     const userId = await this.checkSocket(client);
 
-    this.server.to(user).emit('calling', userId);
+    this.server.to(call.userId).emit('calling', {
+      ...call,
+      userId,
+    });
+  }
+
+  @SubscribeMessage('reject')
+  async reject(
+    @MessageBody() target: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = await this.checkSocket(client);
+
+    this.server.to(target).emit('reject', userId);
   }
 }
