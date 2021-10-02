@@ -86,7 +86,8 @@ export class MessagesService {
     const messages = await this.messageModel
       .find(filter)
       .sort({ createdAt: -1 })
-      .limit(limit);
+      .limit(limit)
+      .populate('author');
 
     return messages.reverse();
   }
