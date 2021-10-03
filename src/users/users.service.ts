@@ -91,7 +91,8 @@ export class UsersService {
         username: updateUserDto.username,
         _id: { $ne: userId },
       });
-      if (existedUser) throw new BadRequestException('Username already exists');
+      if (existedUser)
+        throw new BadRequestException({ key: 'auth.usernameExist' });
     }
 
     if (!updateUserDto.email) delete updateUserDto.email;
@@ -100,7 +101,8 @@ export class UsersService {
         username: updateUserDto.email,
         _id: { $ne: userId },
       });
-      if (existedUser) throw new BadRequestException('Email already exists');
+      if (existedUser)
+        throw new BadRequestException({ key: 'auth.emailExist' });
     }
 
     await this.userModel.updateOne({ _id: userId }, updateUserDto);
