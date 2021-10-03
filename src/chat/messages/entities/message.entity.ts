@@ -6,6 +6,8 @@ export enum MessageType {
 export enum ContentType {
   TEXT = 'TEXT',
   IMAGE = 'IMAGE',
+  VIDEO = 'VIDEO',
+  AUDIO = 'AUDIO',
   FILE = 'FILE',
   LINK = 'LINK',
 }
